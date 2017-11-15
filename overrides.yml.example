@@ -4,3 +4,4 @@
 
 region: ap-southeast-2
 profile: my_profile
+ec2_keypair: my_keypair

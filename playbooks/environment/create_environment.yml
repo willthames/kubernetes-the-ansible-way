@@ -1,0 +1,27 @@
+- hosts: kubernetes-fabric-{{ env }}-runner
+  gather_facts: no
+  vars:
+    state: present
+
+  roles:
+    - name: ec2_vpc
+      tags:
+        - create_vpc
+
+    - name: ec2_group
+      tags:
+        - create_security_groups
+
+    - name: ec2_vpc_subnet
+      tags:
+        - create_subnets
+
+- hosts: kubernetes-compute:&{{ env }}:&runner
+  gather_facts: no
+  vars:
+    state: present
+
+  roles:
+    - name: ec2_asg
+      tags:
+        - create_asg

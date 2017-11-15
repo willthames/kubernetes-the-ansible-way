@@ -1,0 +1,17 @@
+- name: determine the vpc ID
+  ec2_vpc_net_facts:
+    filters:
+      tag:Name: "{{ vpc_name }}"
+    region: "{{ region }}"
+    profile: "{{ profile|default(omit) }}"
+  register: vpc_facts
+
+- name: ensure subnets are absent
+  ec2_vpc_subnet:
+    cidr: "{{ item.cidr }}"
+    vpc_id: "{{ vpc_facts.vpcs[0].id }}"
+    state: absent
+    region: "{{ region }}"
+    profile: "{{ profile|default(omit) }}"
+  with_items: "{{ subnets }}"
+

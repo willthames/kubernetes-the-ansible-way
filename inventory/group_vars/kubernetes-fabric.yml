@@ -1,0 +1,45 @@
+######################################################################
+# SECURITY GROUPS
+######################################################################
+
+security_groups:
+- name: kubernetes-public-access-sg
+  description: Allow external SSH, ICMP and HTTPS
+  rules:
+  - proto: tcp
+    ports:
+      - 22
+      - 6443
+    cidr_ip: 0.0.0.0/0
+  - proto: icmp
+    from_port: 8
+    to_port: -1
+    cidr_ip: 0.0.0.0/0
+  tags:
+    Environment: "{{ env }}"
+
+- name: kubernetes-internal-access-sg
+  description: Allow everything internally
+  rules:
+  - proto: all
+    group_name: kubernetes-internal-access-sg
+  tags:
+    Environment: "{{ env }}"
+
+######################################################################
+# SUBNETS
+######################################################################
+
+subnets:
+- az: a
+  cidr: "{{ cidr_prefix }}.0.0/20"
+  tags:
+    Environment: "{{ env }}"
+- az: b
+  cidr: "{{ cidr_prefix }}.64.0/20"
+  tags:
+    Environment: "{{ env }}"
+- az: c
+  cidr: "{{ cidr_prefix }}.128.0/20"
+  tags:
+    Environment: "{{ env }}"

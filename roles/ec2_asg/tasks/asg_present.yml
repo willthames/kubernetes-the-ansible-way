@@ -1,0 +1,65 @@
+- name: determine the vpc ID
+  ec2_vpc_net_facts:
+    filters:
+      tag:Name: "{{ vpc_name }}"
+    region: "{{ region }}"
+    profile: "{{ profile|default(omit) }}"
+  register: vpc_facts
+
+- name: find latest AMI
+  ec2_ami_find:
+    name: "{{ asg_image_name }}"
+    owner: "{{ asg_image_owner }}"
+    sort: name
+    sort_order: descending
+    sort_end: 1
+    region: "{{ region }}"
+    profile: "{{ profile| default(omit) }}"
+  register: ami_find
+
+- name: set useful facts
+  set_fact:
+    ami_id: "{{ ami_find.results[0].ami_id }}"
+    vpc_id: "{{ vpc_facts.vpcs[0].id }}"
+
+- name: find security groups
+  ec2_group_facts:
+    filters:
+      vpc-id: "{{ vpc_id }}"
+      tag:Environment: "{{ env }}"
+    region: "{{ region }}"
+    profile: "{{ profile| default(omit) }}"
+  register: security_group_facts
+
+- name: find subnets
+  ec2_vpc_subnet_facts:
+    filters:
+      vpc-id: "{{ vpc_id }}"
+      tag:Environment: "{{ env }}"
+    region: "{{ region }}"
+    profile: "{{ profile| default(omit) }}"
+  register: subnet_facts
+
+- name: ensure launch configuration exists
+  ec2_lc:
+    name: "{{ asg_lc_name }}"
+    image_id: "{{ ami_id }}"
+    key_name: "{{ ec2_keypair }}"
+    security_groups: "{{ security_group_facts.security_groups|json_query('[].group_id') }}"
+    instance_type: "{{ asg_instance_type }}"
+    assign_public_ip: "{{ asg_assign_public_ip }}"
+    vpc_id: "{{ vpc_facts.vpcs[0].id }}"
+    region: "{{ region }}"
+    profile: "{{ profile| default(omit) }}"
+
+- name: ensure autoscaling group exists
+  ec2_asg:
+    name: "{{ asg_name }}"
+    launch_config_name: "{{ asg_lc_name }}"
+    min_size: "{{ asg_min_size }}"
+    max_size: "{{ asg_max_size }}"
+    desired_capacity: "{{ asg_desired_capacity }}"
+    vpc_zone_identifier: "{{ subnet_facts.subnets|json_query('[].id') }}"
+    tags: "{{ asg_tags }}"
+    region: "{{ region }}"
+    profile: "{{ profile| default(omit) }}"

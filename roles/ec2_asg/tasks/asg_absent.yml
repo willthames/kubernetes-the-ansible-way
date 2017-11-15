@@ -1,0 +1,24 @@
+- name: determine the ASG(s) to remove
+  ec2_asg_facts:
+    tags:
+      Environment: "{{ env }}"
+    region: "{{ region }}"
+    profile: "{{ profile|default(omit) }}"
+  register: ec2_asg_facts
+
+- name: ensure autoscaling group does not exist
+  ec2_asg:
+    name: "{{ item.auto_scaling_group_name }}"
+    state: absent
+    region: "{{ region }}"
+    profile: "{{ profile| default(omit) }}"
+  with_items: "{{ ec2_asg_facts.results }}"
+
+
+- name: ensure launch configuration does not exist
+  ec2_lc:
+    name: "{{ item.launch_configuration_name }}"
+    state: absent
+    region: "{{ region }}"
+    profile: "{{ profile| default(omit) }}"
+  with_items: "{{ ec2_asg_facts.results }}"

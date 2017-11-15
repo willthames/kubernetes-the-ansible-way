@@ -1,0 +1,12 @@
+asg_image_name: "ubuntu/images/hvm-ssd/ubuntu-xenial-16.04-amd64-server-*"
+asg_image_owner: "099720109477"
+asg_min_size: 1
+asg_max_size: 1
+asg_desired_capacity: 1
+asg_lc_name: "kubernetes-{{ application }}-{{ ami_id }}-lc"
+asg_name: "kubernetes-{{ application }}-{{ ami_id }}-asg"
+asg_instance_type: t2.micro
+asg_assign_public_ip: no
+asg_tags:
+  - Environment: "{{ env }}"
+  - Application: "{{ application }}"
