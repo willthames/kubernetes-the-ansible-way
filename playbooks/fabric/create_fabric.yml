@@ -1,0 +1,12 @@
+- hosts: kubernetes-{{ env }}-runner
+  gather_facts: no
+  vars:
+    state: present
+
+  roles:
+    - name: ec2_vpc
+      tags:
+        - create_vpc
+    - name: ec2_group
+      tags:
+        - create_security_groups

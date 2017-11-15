@@ -1,0 +1,6 @@
+# For quick overrides without needing to adjust inventory
+# update this file to meet needs and be overrides.yml
+# and then pass it with -e @overrides.yml
+
+region: ap-southeast-2
+profile: my_profile

@@ -1,0 +1,16 @@
+- name: determine the vpc ID
+  ec2_vpc_net_facts:
+    filters:
+      tag:Name: "{{ vpc_name }}"
+    region: "{{ region }}"
+    profile: "{{ profile|default(omit) }}"
+  register: vpc_facts
+
+- name: ensure security groups are present
+  ec2_group:
+    name: "{{ item.name }}"
+    state: absent
+    vpc_id: "{{ vpc_facts.vpcs[0].id }}"
+    region: "{{ region }}"
+    profile: "{{ profile|default(omit) }}"
+  with_items: "{{ security_groups }}"
